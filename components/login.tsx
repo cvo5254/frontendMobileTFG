@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity ,Button, StyleSheet, Text } from 'react-native';
+import ModalComponent from './modal';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = async () => {
     // Lógica de inicio de sesión aquí
@@ -15,8 +17,13 @@ const Login = () => {
       });
       const data = await response.text();
       console.log(data); // Haz algo con la respuesta del servidor
+      // Si la respuesta es un error, establece el mensaje de error en el estado
+      if (response.status !== 200) {
+        setErrorMessage(data);
+      }
     } catch (error) {
       console.error(error); // Maneja cualquier error
+      setErrorMessage('Ha ocurrido un error inesperado');
     }
   };
 
@@ -41,6 +48,7 @@ const Login = () => {
         </TouchableOpacity>
       </View>
       <Text style={styles.errorText}>{/* Renderiza mensajes de error aquí si es necesario */}</Text>
+      {errorMessage !== '' && <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />}
     </View>
   );
 };
