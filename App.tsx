@@ -1,13 +1,23 @@
 import React from 'react';
-import { SafeAreaView, StatusBar, useColorScheme } from 'react-native';
 import Login from './components/login'; 
-import {
-  Colors
-} from 'react-native/Libraries/NewAppScreen';
+import Registro from './components/register';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+
+const Stack = createNativeStackNavigator();
 
 function App(): JSX.Element {
   return (
-      <Login /> 
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{title: 'TFG'}}
+        />
+        <Stack.Screen name="Register" component={Registro}/>
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 

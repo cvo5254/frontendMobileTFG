@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity ,Button, StyleSheet, Text } from 'react-native';
 import ModalComponent from './modal';
+import { NavigationProp } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
 
-const Login = () => {
+interface LoginProps {
+  navigation: NavigationProp<ParamListBase>;
+}
+
+
+const Login: React.FC<LoginProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = async () => {
-    // Lógica de inicio de sesión aquí
     try {
       const response = await fetch("http://10.0.2.2:8000/api/login_movil/", {
         method: "POST",
@@ -16,13 +22,11 @@ const Login = () => {
         body: JSON.stringify({ email, password }),
       });
       const data = await response.text();
-      console.log(data); // Haz algo con la respuesta del servidor
-      // Si la respuesta es un error, establece el mensaje de error en el estado
+      console.log(data); 
       if (response.status !== 200) {
         setErrorMessage(data);
       }
     } catch (error) {
-      console.error(error); // Maneja cualquier error
       setErrorMessage('Ha ocurrido un error inesperado');
     }
   };
@@ -46,8 +50,10 @@ const Login = () => {
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Iniciar Sesión</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <Text style={styles.linkText}>Si no tienes cuenta, pulsa aquí</Text>
+        </TouchableOpacity>
       </View>
-      <Text style={styles.errorText}>{/* Renderiza mensajes de error aquí si es necesario */}</Text>
       {errorMessage !== '' && <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />}
     </View>
   );
@@ -86,11 +92,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  errorText: {
-    color: 'red',
+  linkText: {
+    color: '#8b0000',
+    fontSize: 16,
     marginTop: 10,
-  },
+  }
 });
-
 
 export default Login;

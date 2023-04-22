@@ -14,7 +14,7 @@ const ModalComponent: React.FC<ModalProps> = ({ isOpen, onClose, message }) => {
     <Modal transparent visible={isOpen} animationType="fade">
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Error</Text>
+          <Text style={styles.modalTitle}>Atención</Text>
           <Text style={styles.modalText}>{message}</Text>
           <TouchableOpacity onPress={onClose} style={styles.modalButton}>
             <Text style={styles.modalButtonText}>Aceptar</Text>

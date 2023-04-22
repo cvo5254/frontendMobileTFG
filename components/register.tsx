@@ -1,25 +1,36 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import ModalComponent from './modal';
+import { NavigationProp } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
 
-const Registro = () => {
+interface RegisterProps {
+  navigation: NavigationProp<ParamListBase>;
+}
+
+const Registro: React.FC<RegisterProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleRegistro = async () => {
-    // Lógica de registro aquí
     try {
-      const response = await fetch("http://10.0.2.2:8000/api/registro_movil/", {
+      const response = await fetch("http://10.0.2.2:8000/api/registro/", {
         method: "POST",
         headers: { "Content-type": "application/json" },
-        body: JSON.stringify({ email, password, confirmPassword }),
+        body: JSON.stringify({ email, password}),
       });
       const data = await response.text();
       console.log(data); // Haz algo con la respuesta del servidor
-      // Si la respuesta es un error, establece el mensaje de error en el estado
-      if (response.status !== 200) {
+
+      if (response.status === 200) {
+        setSuccessMessage('Registro completado con éxito');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+      } else {
         setErrorMessage(data);
       }
     } catch (error) {
@@ -27,6 +38,12 @@ const Registro = () => {
       setErrorMessage('Ha ocurrido un error inesperado');
     }
   };
+
+  const handleModalClose = () => {
+    setErrorMessage('');
+    setSuccessMessage('');
+    navigation.goBack();
+  }
 
   return (
     <View style={styles.container}>
@@ -55,8 +72,8 @@ const Registro = () => {
           <Text style={styles.buttonText}>Registrarse</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.errorText}>{/* Renderiza mensajes de error aquí si es necesario */}</Text>
-      {errorMessage !== '' && <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />}
+      {errorMessage !== '' && <ModalComponent isOpen={true} onClose={handleModalClose} message={errorMessage} />}
+      {successMessage !== '' && <ModalComponent isOpen={true} onClose={handleModalClose} message={successMessage} />}
     </View>
   );
 };
