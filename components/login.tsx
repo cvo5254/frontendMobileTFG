@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, TextInput, TouchableOpacity ,Button, StyleSheet, Text } from 'react-native';
 import ModalComponent from './modal';
 import { NavigationProp } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
+import {UserContext} from '../UserContext';
 
 interface LoginProps {
   navigation: NavigationProp<ParamListBase>;
@@ -13,6 +14,7 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const { user, setUser } = useContext(UserContext)
 
   const handleLogin = async () => {
     try {
@@ -23,6 +25,8 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
       });
       const data = await response.text();
       console.log(data); 
+      setUser(email)
+      navigation.navigate('Landing')
       if (response.status !== 200) {
         setErrorMessage(data);
       }
