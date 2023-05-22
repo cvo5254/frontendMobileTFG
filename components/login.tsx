@@ -23,9 +23,10 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
         headers: { "Content-type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = await response.text();
+      const data = await response.json();
+      const id = data.usuario.id;
       console.log(data); 
-      setUser(email)
+      setUser(id)
       navigation.navigate('Landing')
       if (response.status !== 200) {
         setErrorMessage(data);
