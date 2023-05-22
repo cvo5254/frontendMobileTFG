@@ -26,7 +26,7 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
       const data = await response.json();
       const id = data.usuario.id;
       console.log(data); 
-      setUser(id)
+      setUser({ id });
       navigation.navigate('Landing')
       if (response.status !== 200) {
         setErrorMessage(data);
