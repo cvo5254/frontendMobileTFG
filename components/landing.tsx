@@ -2,8 +2,15 @@ import React, { useEffect, useState, useContext } from 'react';
 import { UserContext } from '../UserContext';
 import ModalComponent from './modal';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { NavigationProp } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
+import Footer from './footer';
 
-const Landing = () => {
+interface LandingProps {
+  navigation: NavigationProp<ParamListBase>;
+}
+
+const Landing: React.FC<LandingProps> = ({ navigation })  => {
   interface Channel {
     id: number;
     nombre: string;
@@ -48,6 +55,7 @@ const Landing = () => {
           keyExtractor={(item) => item.id.toString()}
         />
       </View>
+      <Footer/>
       {errorMessage !== '' && (
         <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />
       )}

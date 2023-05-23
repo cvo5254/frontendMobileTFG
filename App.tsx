@@ -2,6 +2,7 @@ import React from 'react';
 import Login from './components/login'; 
 import Registro from './components/register';
 import Landing from './components/landing';
+import Footer from './components/footer';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { UserProvider } from './UserContext';
@@ -20,6 +21,7 @@ function App(): JSX.Element {
           />
           <Stack.Screen name="Register" component={Registro}/>
           <Stack.Screen name="Landing" component={Landing}/>
+          <Stack.Screen name="Footer" component={Footer}/>
         </Stack.Navigator>
       </NavigationContainer>
     </UserProvider>
