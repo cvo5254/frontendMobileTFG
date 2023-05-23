@@ -55,7 +55,7 @@ const Landing: React.FC<LandingProps> = ({ navigation })  => {
           keyExtractor={(item) => item.id.toString()}
         />
       </View>
-      <Footer/>
+      <Footer navigation={navigation}/>
       {errorMessage !== '' && (
         <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />
       )}

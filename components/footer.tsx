@@ -1,10 +1,16 @@
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { NavigationProp } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
 
-const Footer = () => {
+interface FooterProps {
+    navigation: NavigationProp<ParamListBase>;
+  }
+  
+  const Footer: React.FC<FooterProps> = ({ navigation })  => {
     const handleClick = () => {
-      // Aquí puedes realizar las acciones que deseas al hacer clic en el botón
-      console.log('Botón del footer clickeado');
+        navigation.navigate('Inform')
+        console.log('Botón del footer clickeado');
     };
   
     return (
@@ -34,5 +40,5 @@ const Footer = () => {
       fontWeight: 'bold',
     },
   });  
-  
+
 export default Footer
