@@ -10,19 +10,31 @@ interface LandingProps {
   navigation: NavigationProp<ParamListBase>;
 }
 
-const Landing: React.FC<LandingProps> = ({ navigation }) => {
-  interface Channel {
-    id: number;
-    nombre: string;
-    subscribers: string[];
-  }
+interface Channel {
+  id: number;
+  nombre: string;
+  subscribers: string[];
+}
 
+interface Emergency {
+  id: number;
+  title: string;
+  description: string;
+}
+
+const Landing: React.FC<LandingProps> = ({ navigation }) => {
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [emergencies, setEmergencies] = useState<Emergency[]>([]);
+  const [selectedChannelId, setSelectedChannelId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const { user } = useContext(UserContext);
   const userId = user ? user.id : null;
 
   useEffect(() => {
+    fetchChannels();
+  }, [navigation]);
+
+  const fetchChannels = () => {
     fetch(`http://10.0.2.2:8000/api/${userId}/subscriptions/`)
       .then(response => response.json())
       .then(data => {
@@ -30,25 +42,49 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
         console.log(data);
       })
       .catch(error => console.log(error));
-  }, []);
+  };
 
-  const renderChannelItem = ({ item }: { item: Channel }) => (
-    <TouchableOpacity>
-      <View style={styles.channelItem}>
-        <Text>ID: {item.id}</Text>
-        <Text>Nombre: {item.nombre}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const fetchEmergencies = (channelId: number) => {
+    fetch(`http://10.0.2.2:8000/api/${channelId}/emergencies`)
+      .then(response => response.json())
+      .then(data => {
+        setEmergencies(data);
+      })
+      .catch(error => console.log(error));
+  };
 
-  const handleSubscribe = () => {
-    navigation.navigate('Suscribe to channel')
+  const renderChannelItem = ({ item }: { item: Channel }) => {
+    const hasEmergencies = selectedChannelId === item.id && emergencies.length > 0;
+
+    return (
+      <TouchableOpacity onPress={() => handleChannelPress(item.id)}>
+        <View style={styles.channelItem}>
+          <Text>ID: {item.id}</Text>
+          <Text>Nombre: {item.nombre}</Text>
+        </View>
+        {hasEmergencies && (
+          <View>
+            {emergencies.map(emergency => (
+              <View key={emergency.id} style={styles.emergencyItem}>
+                <Text style={styles.emergencyTitle}>{emergency.title}</Text>
+                <Text style={styles.emergencyDescription}>{emergency.description}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const handleChannelPress = (channelId: number) => {
+    setSelectedChannelId(channelId);
+    fetchEmergencies(channelId);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tus canales suscritos:</Text>
-      <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
+      <TouchableOpacity style={styles.subscribeButton} onPress={() => navigation.navigate('Suscribe to channel')}>
         <Text style={styles.subscribeButtonText}>Suscribirse a un nuevo canal</Text>
       </TouchableOpacity>
       <View style={styles.table}>
@@ -66,7 +102,6 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
       {errorMessage !== '' && (
         <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />
       )}
-      
     </View>
   );
 };
@@ -119,6 +154,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  emergencyItem: {
+    marginTop: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+  },
+  emergencyTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  emergencyDescription: {
+    fontSize: 14,
   },
 });
 

@@ -40,7 +40,6 @@ const Subscribe: React.FC<SubscribeProps> = ({ navigation }) => {
     if (selectedChannel) {
       subscribeToChannel(selectedChannel);
       setSelectedChannel(null);
-      navigation.goBack()
     }
   };
 
@@ -58,6 +57,7 @@ const Subscribe: React.FC<SubscribeProps> = ({ navigation }) => {
       .then(response => response.json())
       .then(data => {
         console.log('Suscripción exitosa:', data);
+        navigation.goBack()
       })
       .catch(error => console.log(error));
   };
