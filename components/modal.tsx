@@ -4,11 +4,20 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onConfirm?: () => void;
   message: string;
 }
 
-const ModalComponent: React.FC<ModalProps> = ({ isOpen, onClose, message }) => {
+const ModalComponent: React.FC<ModalProps> = ({ isOpen, onClose, onConfirm, message }) => {
   if (!isOpen) return null;
+
+  const handleConfirm = () => {
+    if (onConfirm) {
+      onConfirm();
+    } else {
+      onClose();
+    }
+  };
 
   return (
     <Modal transparent visible={isOpen} animationType="fade">
@@ -16,7 +25,7 @@ const ModalComponent: React.FC<ModalProps> = ({ isOpen, onClose, message }) => {
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Atención</Text>
           <Text style={styles.modalText}>{message}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.modalButton}>
+          <TouchableOpacity onPress={handleConfirm} style={styles.modalButton}>
             <Text style={styles.modalButtonText}>Aceptar</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>

@@ -4,6 +4,7 @@ import Registro from './components/register';
 import Landing from './components/landing';
 import Footer from './components/footer';
 import Inform from './components/inform';
+import Subscribe from './components/suscribe';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { UserProvider } from './UserContext';
@@ -24,6 +25,7 @@ function App(): JSX.Element {
           <Stack.Screen name="Landing" component={Landing}/>
           <Stack.Screen name="Footer" component={Footer}/>
           <Stack.Screen name="Inform" component={Inform}/>
+          <Stack.Screen name="Suscribe to channel" component={Subscribe}/>
         </Stack.Navigator>
       </NavigationContainer>
     </UserProvider>

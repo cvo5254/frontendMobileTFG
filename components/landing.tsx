@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { UserContext } from '../UserContext';
 import ModalComponent from './modal';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
 import Footer from './footer';
@@ -10,7 +10,7 @@ interface LandingProps {
   navigation: NavigationProp<ParamListBase>;
 }
 
-const Landing: React.FC<LandingProps> = ({ navigation })  => {
+const Landing: React.FC<LandingProps> = ({ navigation }) => {
   interface Channel {
     id: number;
     nombre: string;
@@ -41,9 +41,16 @@ const Landing: React.FC<LandingProps> = ({ navigation })  => {
     </TouchableOpacity>
   );
 
+  const handleSubscribe = () => {
+    navigation.navigate('Suscribe to channel')
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tus canales suscritos:</Text>
+      <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
+        <Text style={styles.subscribeButtonText}>Suscribirse a un nuevo canal</Text>
+      </TouchableOpacity>
       <View style={styles.table}>
         <View style={styles.tableHeader}>
           <Text style={styles.headerText}>ID</Text>
@@ -55,10 +62,11 @@ const Landing: React.FC<LandingProps> = ({ navigation })  => {
           keyExtractor={(item) => item.id.toString()}
         />
       </View>
-      <Footer navigation={navigation}/>
+      <Footer navigation={navigation} />
       {errorMessage !== '' && (
         <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />
       )}
+      
     </View>
   );
 };
@@ -98,6 +106,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#8b0000',
+  },
+  subscribeButton: {
+    marginTop: 20,
+    backgroundColor: '#8b0000',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  subscribeButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
