@@ -4,6 +4,7 @@ import ModalComponent from './modal';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
+import { useSubscriptionContext } from '../SubscriptionContext';
 import Footer from './footer';
 
 interface LandingProps {
@@ -28,11 +29,12 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
   const [selectedChannelId, setSelectedChannelId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const { user } = useContext(UserContext);
+  const { updateSubscriptions } = useSubscriptionContext();
   const userId = user ? user.id : null;
 
   useEffect(() => {
     fetchChannels();
-  }, [navigation]);
+  }, [updateSubscriptions]);
 
   const fetchChannels = () => {
     fetch(`http://10.0.2.2:8000/api/${userId}/subscriptions/`)

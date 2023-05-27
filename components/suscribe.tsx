@@ -4,6 +4,7 @@ import ModalComponent from './modal';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
+import { useSubscriptionContext } from '../SubscriptionContext';
 
 interface SubscribeProps {
   navigation: NavigationProp<ParamListBase>;
@@ -20,6 +21,7 @@ const Subscribe: React.FC<SubscribeProps> = ({ navigation }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const { user } = useContext(UserContext);
+  const { updateSubscriptions } = useSubscriptionContext();
   const userId = user ? user.id : null;
 
   useEffect(() => {
@@ -57,6 +59,7 @@ const Subscribe: React.FC<SubscribeProps> = ({ navigation }) => {
       .then(response => response.json())
       .then(data => {
         console.log('Suscripción exitosa:', data);
+        updateSubscriptions();
         navigation.goBack()
       })
       .catch(error => console.log(error));

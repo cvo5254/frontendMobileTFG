@@ -8,11 +8,13 @@ import Subscribe from './components/suscribe';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { UserProvider } from './UserContext';
+import { SubscriptionProvider } from './SubscriptionContext';
 
 const Stack = createNativeStackNavigator();
 
 function App(): JSX.Element {
   return (
+    <SubscriptionProvider>
     <UserProvider>
       <NavigationContainer>
         <Stack.Navigator>
@@ -29,6 +31,7 @@ function App(): JSX.Element {
         </Stack.Navigator>
       </NavigationContainer>
     </UserProvider>
+    </SubscriptionProvider>
   );
 }
 
