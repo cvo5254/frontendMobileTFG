@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { UserContext } from '../UserContext';
 import ModalComponent from './modal';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
 import { useSubscriptionContext } from '../SubscriptionContext';
@@ -14,7 +14,7 @@ interface LandingProps {
 interface Channel {
   id: number;
   nombre: string;
-  subscribers: string[];
+  subscribers: string[];  
 }
 
 interface Emergency {
@@ -70,6 +70,7 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
               <View key={emergency.id} style={styles.emergencyItem}>
                 <Text style={styles.emergencyTitle}>{emergency.title}</Text>
                 <Text style={styles.emergencyDescription}>{emergency.description}</Text>
+                <View style={styles.separator} />
               </View>
             ))}
           </View>
@@ -85,10 +86,12 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tus canales suscritos:</Text>
-      <TouchableOpacity style={styles.subscribeButton} onPress={() => navigation.navigate('Suscribe to channel')}>
-        <Text style={styles.subscribeButtonText}>Suscribirse a un nuevo canal</Text>
-      </TouchableOpacity>
+      <View style={styles.header}>
+        <Text style={styles.title}>Tus canales suscritos:</Text>
+        <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('Suscribe to channel')}>
+          <Text style={styles.addButtonIcon}>+</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.table}>
         <View style={styles.tableHeader}>
           <Text style={styles.headerText}>ID</Text>
@@ -98,13 +101,16 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
           data={channels}
           renderItem={renderChannelItem}
           keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.flatListContent}
         />
       </View>
-      <Footer navigation={navigation} />
+      
       {errorMessage !== '' && (
         <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />
       )}
+      <Footer navigation={navigation} />
     </View>
+    
   );
 };
 
@@ -115,15 +121,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 50,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
   },
+  title: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  addButton: {
+    backgroundColor: '#8b0000',
+    borderRadius: 20,
+    padding: 5,
+  },
+  addButtonIcon: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   table: {
+    flex: 1,
     width: '100%',
     borderWidth: 1,
     borderColor: '#8b0000',
+  },
+  flatListContent: {
+    flexGrow: 1,
   },
   tableHeader: {
     flexDirection: 'row',
@@ -144,32 +169,27 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#8b0000',
   },
-  subscribeButton: {
-    marginTop: 20,
-    backgroundColor: '#8b0000',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  subscribeButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
   emergencyItem: {
     marginTop: 10,
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
+    flexDirection: 'row', 
+    alignItems: 'center', 
   },
   emergencyTitle: {
+    flex: 1, 
     fontSize: 16,
     fontWeight: 'bold',
   },
   emergencyDescription: {
+    flex: 1, 
     fontSize: 14,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#8b0000', 
+    marginTop: 10,
+    marginBottom: 5,
   },
 });
 
