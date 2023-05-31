@@ -28,16 +28,17 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
   const [emergencies, setEmergencies] = useState<Emergency[]>([]);
   const [selectedChannelId, setSelectedChannelId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useContext(UserContext);
   const { updateSubscriptions } = useSubscriptionContext();
-  const userId = user ? user.id : null;
+  const user_id = user ? user.id : null;
 
   useEffect(() => {
     fetchChannels();
   }, [updateSubscriptions]);
 
   const fetchChannels = () => {
-    fetch(`http://10.0.2.2:8000/api/${userId}/subscriptions/`)
+    fetch(`http://10.0.2.2:8000/api/${user_id}/subscriptions/`)
       .then(response => response.json())
       .then(data => {
         setChannels(data);
@@ -55,6 +56,53 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
       .catch(error => console.log(error));
   };
 
+  const handleUnsubscribe = async (channel_id: number) => {
+    setSelectedChannelId(channel_id);
+    setIsModalOpen(true);
+    try {
+      const response = await fetch("http://10.0.2.2:8000/api/unsuscribe/", {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({ channel_id, user_id}),
+      });
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error('Ha ocurrido un error inesperado:', error);
+      setErrorMessage('Ha ocurrido un error durante la desuscripción.');
+    }
+  };
+  
+  const fetchUnsuscribe = async (channel_id: number) => {
+    try {
+      const response = await fetch("http://10.0.2.2:8000/api/unsuscribe/", {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({ channel_id, user_id}),
+      });
+      const data = await response.json();
+      fetchChannels();
+      console.log(data);
+    } catch (error) {
+      console.error('Ha ocurrido un error inesperado:', error);
+      setErrorMessage('Ha ocurrido un error durante la desuscripción.');
+    }
+  } 
+
+  const handleModalConfirm = () => {
+    if (selectedChannelId !== null) {
+      fetchUnsuscribe(selectedChannelId)
+      
+    }
+    setIsModalOpen(false);
+  };
+  
+  
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+  
+  
   const renderChannelItem = ({ item }: { item: Channel }) => {
     const hasEmergencies = selectedChannelId === item.id && emergencies.length > 0;
 
@@ -63,6 +111,11 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
         <View style={styles.channelItem}>
           <Text>ID: {item.id}</Text>
           <Text>Nombre: {item.nombre}</Text>
+          <TouchableOpacity style={styles.unsubscribeButton} onPress={() => {setSelectedChannelId(item.id);
+    setIsModalOpen(true);
+    setErrorMessage('Seguro que desea desuscrbirse del canal?')}}>
+            <Text style={styles.unsubscribeButtonText}>Desuscribirse</Text>
+          </TouchableOpacity>
         </View>
         {hasEmergencies && (
           <View>
@@ -104,9 +157,8 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
           contentContainerStyle={styles.flatListContent}
         />
       </View>
-      
       {errorMessage !== '' && (
-        <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />
+        <ModalComponent isOpen={isModalOpen} onClose={handleModalClose} onConfirm={handleModalConfirm} message={errorMessage} />
       )}
       <Footer navigation={navigation} />
     </View>
@@ -191,6 +243,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 5,
   },
+  unsubscribeButton: {
+    backgroundColor: '#8b0000',
+    borderRadius: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    marginTop: 5,
+  },
+  unsubscribeButtonText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },  
 });
 
 export default Landing;

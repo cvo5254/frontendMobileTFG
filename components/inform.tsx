@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { StyleSheet, View, TextInput, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TextInput, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import ModalComponent from './modal';
 import { UserContext } from '../UserContext';
 import { NavigationProp } from '@react-navigation/native';
@@ -23,6 +23,7 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
   const [selectedChannelId, setSelectedChannelId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const { user } = useContext(UserContext);
   const reporter_id = user ? user.id : null;
 
@@ -34,16 +35,49 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
         body: JSON.stringify({ title, description, channel_id: selectedChannelId, reporter_id }),
       });
       const data = await response.json();
-      console.log(data);
 
       if (response.status === 200 || response.status === 201) {
         setMessage(data.mensaje);
+        const emergencyId = data.emergencia.id;
+        await uploadImages(emergencyId);
       } else {
         // El servidor respondió con un estado distinto de 200
         // Aquí puedes manejar el error de acuerdo a tus necesidades
       }
     } catch (error) {
       console.error('Ha ocurrido un error inesperado:', error);
+      // Aquí puedes manejar el error de acuerdo a tus necesidades
+    }
+  };
+
+  const uploadImages = async (emergencyId: number) => {
+    try {
+      const formData = new FormData();
+      selectedImages.forEach((imageUri, index) => {
+        formData.append('photos', {
+          uri: imageUri,
+          name: `photo_${index}`,
+          type: 'image/jpeg',
+        });
+      });
+
+      const response = await fetch(`http://10.0.2.2:8000/api/emergency_images_upload/${emergencyId}/`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+
+      if (response.status === 200) {
+        // Las imágenes se han subido exitosamente
+      } else {
+        // El servidor respondió con un estado distinto de 200
+        // Aquí puedes manejar el error de acuerdo a tus necesidades
+      }
+    } catch (error) {
+      console.error('Ha ocurrido un error al subir las imágenes:', error);
       // Aquí puedes manejar el error de acuerdo a tus necesidades
     }
   };
@@ -63,8 +97,12 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
     fetchChannels();
   }, []);
 
+  const handleImageSelection = () => {
+    // Lógica para seleccionar imágenes aquí
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.label}>Título</Text>
       <TextInput
         style={styles.input}
@@ -93,18 +131,29 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
         <Text style={styles.buttonText}>Enviar</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.button} onPress={handleImageSelection}>
+        <Text style={styles.buttonText}>Agregar Imágenes</Text>
+      </TouchableOpacity>
+
+      <View style={styles.imageContainer}>
+        {selectedImages.map((imageUri, index) => (
+          <Image key={index} source={{ uri: imageUri }} style={styles.image} />
+        ))}
+      </View>
+
       {message !== '' && (
         <ModalComponent isOpen={true} onClose={() => {
           setMessage('');
           navigation.goBack();
         }} message={message} />
       )}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
   },
@@ -134,6 +183,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  imageContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginHorizontal: 5,
+    marginVertical: 5,
   },
 });
 
