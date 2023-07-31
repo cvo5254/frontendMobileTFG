@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { StyleSheet, View, TextInput, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { StyleSheet, View, TextInput, Text, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import ModalComponent from './modal';
 import { UserContext } from '../UserContext';
 import { NavigationProp } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
 import Dropdown from './dropdown';
+import ImagePicker from 'react-native-image-crop-picker';
+import { Image as ImagePickerResponse } from 'react-native-image-crop-picker';
+import { PermissionsAndroid } from 'react-native';
+
+
 
 interface InformProps {
   navigation: NavigationProp<ParamListBase>;
@@ -16,30 +21,48 @@ interface Channel {
   subscribers: string[];
 }
 
+
+
+
 const Inform: React.FC<InformProps> = ({ navigation }) => {
   const [title, setTitle] = useState('');
-  const [channel, setChannel] = useState('');
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [images, setImages] = useState<string[]>([]);
   const [selectedChannelId, setSelectedChannelId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const { user } = useContext(UserContext);
   const reporter_id = user ? user.id : null;
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch("http://10.0.2.2:8000/api/crear_emergencia/", {
-        method: "POST",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({ title, description, channel_id: selectedChannelId, reporter_id }),
-      });
-      const data = await response.json();
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('description', description);
+      formData.append('channel_id', selectedChannelId);
+      formData.append('reporter_id', reporter_id);
+      
+      formData.append('images', JSON.stringify(images));
 
+      console.log(formData)
+      const response = await fetch(`http://10.0.2.2:8000/api/create_emergency/`, {
+        method: "POST",
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+  
       if (response.status === 200 || response.status === 201) {
         setMessage(data.mensaje);
         const emergencyId = data.emergencia.id;
-        await uploadImages(emergencyId);
       } else {
         // El servidor respondió con un estado distinto de 200
         // Aquí puedes manejar el error de acuerdo a tus necesidades
@@ -49,38 +72,7 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
       // Aquí puedes manejar el error de acuerdo a tus necesidades
     }
   };
-
-  const uploadImages = async (emergencyId: number) => {
-    try {
-      const formData = new FormData();
-      selectedImages.forEach((imageUri, index) => {
-        formData.append('photos', {
-          uri: imageUri,
-          name: `photo_${index}`,
-          type: 'image/jpeg',
-        });
-      });
-
-      const response = await fetch(`http://10.0.2.2:8000/api/emergency_images_upload/${emergencyId}/`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'multipart/form-data',
-        },
-        body: formData,
-      });
-
-      if (response.status === 200) {
-        // Las imágenes se han subido exitosamente
-      } else {
-        // El servidor respondió con un estado distinto de 200
-        // Aquí puedes manejar el error de acuerdo a tus necesidades
-      }
-    } catch (error) {
-      console.error('Ha ocurrido un error al subir las imágenes:', error);
-      // Aquí puedes manejar el error de acuerdo a tus necesidades
-    }
-  };
+  
 
   const fetchChannels = () => {
     fetch(`http://10.0.2.2:8000/api/${reporter_id}/subscriptions/`)
@@ -97,10 +89,51 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
     fetchChannels();
   }, []);
 
-  const handleImageSelection = () => {
-    // Lógica para seleccionar imágenes aquí
-  };
 
+  const requestStoragePermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+        {
+          title: 'Storage Permission',
+          message: 'This app needs access to your storage to function properly.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Storage permission granted');
+      } else {
+        console.log('Storage permission denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+  
+  
+  const handleSelectImages = async () => {
+    try {
+      await requestStoragePermission(); 
+      ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+      }).then((image: ImagePickerResponse | undefined) => {
+        const base64Image = image?.data || ''; // Use '' as default value if image is null or undefined
+        setImages((prevImages) => [...prevImages, base64Image]);
+      });
+    } catch (error) {
+      console.log('Error al seleccionar imágenes:', error);
+    }
+  };
+  
+  
+  
+
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.label}>Título</Text>
@@ -130,17 +163,10 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Enviar</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity style={styles.button} onPress={handleImageSelection}>
-        <Text style={styles.buttonText}>Agregar Imágenes</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSelectImages}>
+        <Text style={styles.buttonText}>Seleccionar Imágenes</Text>
       </TouchableOpacity>
-
-      <View style={styles.imageContainer}>
-        {selectedImages.map((imageUri, index) => (
-          <Image key={index} source={{ uri: imageUri }} style={styles.image} />
-        ))}
-      </View>
-
+      
       {message !== '' && (
         <ModalComponent isOpen={true} onClose={() => {
           setMessage('');
@@ -183,17 +209,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  imageContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 10,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    marginHorizontal: 5,
-    marginVertical: 5,
   },
 });
 
