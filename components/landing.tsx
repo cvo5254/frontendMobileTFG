@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { UserContext } from '../UserContext';
 import ModalComponent from './modal';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
 import { useSubscriptionContext } from '../SubscriptionContext';
@@ -21,6 +21,7 @@ interface Emergency {
   id: number;
   title: string;
   description: string;
+  images: string;
 }
 
 const Landing: React.FC<LandingProps> = ({ navigation }) => {
@@ -51,7 +52,11 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
     fetch(`http://10.0.2.2:8000/api/${channelId}/emergencies`)
       .then(response => response.json())
       .then(data => {
-        setEmergencies(data);
+        const emergenciesWithImages = data.map((emergency: Emergency) => ({
+          ...emergency,
+          images: `http://10.0.2.2:8000${emergency.images}`, 
+        }));
+        setEmergencies(emergenciesWithImages);
       })
       .catch(error => console.log(error));
   };
@@ -123,6 +128,7 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
               <View key={emergency.id} style={styles.emergencyItem}>
                 <Text style={styles.emergencyTitle}>{emergency.title}</Text>
                 <Text style={styles.emergencyDescription}>{emergency.description}</Text>
+                {emergency.images && <Image source={{ uri: emergency.images }} style={styles.emergencyImage} />}
                 <View style={styles.separator} />
               </View>
             ))}
@@ -256,6 +262,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },  
+  emergencyImage: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+  },
 });
 
 export default Landing;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { StyleSheet, View, TextInput, Text, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { StyleSheet, View, TextInput, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import ModalComponent from './modal';
 import { UserContext } from '../UserContext';
 import { NavigationProp } from '@react-navigation/native';
@@ -28,6 +28,7 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
   const [title, setTitle] = useState('');
   const [channels, setChannels] = useState<Channel[]>([]);
   const [images, setImages] = useState<string[]>([]);
+  const [imageURIs, setImageURIs] = useState<string[]>([]);
   const [selectedChannelId, setSelectedChannelId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
@@ -124,14 +125,18 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
       }).then((image: ImagePickerResponse | undefined) => {
         const base64Image = image?.data || ''; // Use '' as default value if image is null or undefined
         setImages((prevImages) => [...prevImages, base64Image]);
+        const uri = `data:image/jpeg;base64,${base64Image}`;
+        setImageURIs((prevURIs) => [...prevURIs, uri]);
       });
     } catch (error) {
       console.log('Error al seleccionar imágenes:', error);
     }
   };
   
-  
-  
+  const handleRemoveImage = (indexToRemove: number) => {
+    setImages((prevImages) => prevImages.filter((_, index) => index !== indexToRemove));
+    setImageURIs((prevURIs) => prevURIs.filter((_, index) => index !== indexToRemove));
+  };
 
   
   return (
@@ -159,14 +164,28 @@ const Inform: React.FC<InformProps> = ({ navigation }) => {
         placeholder="Ingrese la descripción"
         multiline={true}
       />
+      <TouchableOpacity style={styles.button} onPress={handleSelectImages}>
+        <Text style={styles.buttonText}>Seleccionar Imágenes</Text>
+      </TouchableOpacity>
+
+      {imageURIs.length > 0 && (
+        <View>
+          <Text style={styles.label}>Imágenes seleccionadas:</Text>
+          {imageURIs.map((uri, index) => (
+            <View key={index} style={styles.imageContainer}>
+              <Image source={{ uri }} style={styles.image} />
+              <TouchableOpacity style={styles.removeButton} onPress={() => handleRemoveImage(index)}>
+                <Text style={styles.removeButtonText}>Eliminar</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
 
       <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Enviar</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleSelectImages}>
-        <Text style={styles.buttonText}>Seleccionar Imágenes</Text>
-      </TouchableOpacity>
-      
+  
       {message !== '' && (
         <ModalComponent isOpen={true} onClose={() => {
           setMessage('');
@@ -208,6 +227,27 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#ffffff',
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  imageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginRight: 10,
+  },
+  removeButton: {
+    backgroundColor: '#8b0000',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  removeButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
