@@ -5,7 +5,6 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { NavigationProp } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
 import { useSubscriptionContext } from '../SubscriptionContext';
-import Footer from './footer';
 
 interface SubscribeProps {
   navigation: NavigationProp<ParamListBase>;
@@ -104,7 +103,6 @@ const Subscribe: React.FC<SubscribeProps> = ({ navigation }) => {
       {errorMessage !== '' && (
         <ModalComponent isOpen={true} onClose={() => setErrorMessage('')} message={errorMessage} />
       )}
-      <Footer navigation={navigation} />
     </View>
   );
 };

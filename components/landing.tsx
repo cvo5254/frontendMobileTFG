@@ -5,7 +5,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react
 import { NavigationProp } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
 import { useSubscriptionContext } from '../SubscriptionContext';
-import Footer from './footer';
+import { ScrollView } from 'react-native-gesture-handler';
 
 interface LandingProps {
   navigation: NavigationProp<ParamListBase>;
@@ -106,22 +106,33 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
   const handleModalClose = () => {
     setIsModalOpen(false);
   };
-  
+  const handleClick = () => {
+    navigation.navigate('Inform');
+    console.log('Botón del footer clickeado');
+  };
   
   const renderChannelItem = ({ item }: { item: Channel }) => {
     const hasEmergencies = selectedChannelId === item.id && emergencies.length > 0;
 
     return (
-      <TouchableOpacity onPress={() => handleChannelPress(item.id)}>
-        <View style={styles.channelItem}>
-          <Text>ID: {item.id}</Text>
-          <Text>Nombre: {item.nombre}</Text>
-          <TouchableOpacity style={styles.unsubscribeButton} onPress={() => {setSelectedChannelId(item.id);
-    setIsModalOpen(true);
-    setErrorMessage('Seguro que desea desuscrbirse del canal?')}}>
-            <Text style={styles.unsubscribeButtonText}>Desuscribirse</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.channelContainer}>
+        <TouchableOpacity onPress={() => handleChannelPress(item.id)}>
+          <View style={styles.channelItem}>
+          <Text style={styles.channelText}>ID: {item.id}</Text>
+          <Text style={styles.channelText}>Nombre: {item.nombre}</Text>
+            <TouchableOpacity
+              style={styles.unsubscribeButton}
+              onPress={() => {
+                setSelectedChannelId(item.id);
+                setIsModalOpen(true);
+                setErrorMessage('Seguro que desea desuscribirse del canal?');
+              }}
+            >
+              <Text style={styles.unsubscribeButtonText}>-</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+        <View style={styles.channelSeparator} />
         {hasEmergencies && (
           <View>
             {emergencies.map(emergency => (
@@ -134,9 +145,10 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
             ))}
           </View>
         )}
-      </TouchableOpacity>
+      </View>
     );
   };
+
 
   const handleChannelPress = (channelId: number) => {
     setSelectedChannelId(channelId);
@@ -153,8 +165,8 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
       </View>
       <View style={styles.table}>
         <View style={styles.tableHeader}>
-          <Text style={styles.headerText}>ID</Text>
-          <Text style={styles.headerText}>Nombre</Text>
+          <Text style={styles.headerText}></Text>
+          <Text style={styles.headerText}></Text>
         </View>
         <FlatList
           data={channels}
@@ -166,7 +178,9 @@ const Landing: React.FC<LandingProps> = ({ navigation }) => {
       {errorMessage !== '' && (
         <ModalComponent isOpen={isModalOpen} onClose={handleModalClose} onConfirm={handleModalConfirm} message={errorMessage} />
       )}
-      <Footer navigation={navigation} />
+     <TouchableOpacity style={[styles.footerButton]} onPress={handleClick}>
+        <Text style={styles.buttonText}>Inform</Text>
+    </TouchableOpacity>
     </View>
     
   );
@@ -177,7 +191,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 50,
+    paddingHorizontal: 20,
+    backgroundColor: '#f5f5f5', 
   },
   header: {
     flexDirection: 'row',
@@ -219,54 +234,86 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
   },
-  channelItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+  channelContainer: {
     borderBottomWidth: 1,
     borderBottomColor: '#8b0000',
+    marginBottom: 10,
+    paddingBottom: 10,
   },
-  emergencyItem: {
-    marginTop: 10,
-    paddingHorizontal: 20,
+  channelItem: {
+    paddingHorizontal: 10,
     paddingVertical: 10,
-    flexDirection: 'row', 
-    alignItems: 'center', 
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  emergencyTitle: {
-    flex: 1, 
+  channelText: {
     fontSize: 16,
     fontWeight: 'bold',
   },
+  emergencyItem: {
+    marginVertical: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#8b0000',
+  },
+  emergencyTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
   emergencyDescription: {
-    flex: 1, 
     fontSize: 14,
   },
   separator: {
     height: 1,
-    backgroundColor: '#8b0000', 
+    backgroundColor: '#8b0000',
     marginTop: 10,
     marginBottom: 5,
   },
   unsubscribeButton: {
     backgroundColor: '#8b0000',
-    borderRadius: 20,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    marginTop: 5,
+    borderRadius: 10, 
+    paddingVertical: 3, 
+    paddingHorizontal: 6, 
   },
   unsubscribeButtonText: {
     color: '#ffffff',
     fontSize: 12,
     fontWeight: 'bold',
     textAlign: 'center',
-  },  
+  },
   emergencyImage: {
     width: 100,
     height: 100,
     resizeMode: 'contain',
   },
+  footerButton: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#8b0000',
+    paddingVertical: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  channelSeparator: {
+    height: 1,
+    backgroundColor: '#dcdcdc', 
+    marginVertical: 10,
+  },
 });
+
 
 export default Landing;
